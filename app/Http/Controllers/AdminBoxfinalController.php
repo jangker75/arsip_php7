@@ -4,11 +4,11 @@
 	use Request;
 	use DB;
 	use CRUDBooster;
-use Illuminate\Http\Request as HttpRequest;
-use Illuminate\Support\Facades\DB as FacadesDB;
-use PDF;
-	
-use ZipArchive;
+	use Illuminate\Http\Request as HttpRequest;
+	use Illuminate\Support\Facades\DB as FacadesDB;
+	use PDF;
+	use SimpleSoftwareIO\QrCode\Facades\QrCode;
+	use ZipArchive;
 	use SnappyImage;
 
 use function PHPUnit\Framework\isEmpty;
@@ -59,52 +59,45 @@ use function PHPUnit\Framework\isEmpty;
 					$client = DB::table('client')->where('id', $row->client_id)->orderBy('id','asc')->first();
 					
 					return (
-					"<a data-toggle='modal' data-target='#Modal' href='https://chart.googleapis.com/chart?chs=300x300&cht=qr&chl=$row->kode_box'>
-					
-					<img src='https://chart.googleapis.com/chart?chs=300x300&cht=qr&chl=".$row->kode_box."' 
-					onclick='#' alt='Barcode' width='50px' height='50px'></a>
-					
-					<button type='button' class='btn' data-toggle='modal' data-target='#Modal".$row->id."' >Preview</button>
-
-			<div class='modal fade' id='Modal".$row->id."' data-id='".$row->id."'>
-			<div class='modal-dialog' role='document'>
-
-				<div class='modal-content'>
-
-				<div class='modal-header'>
-					<h5 class='modal-title' id='exampleModalLabel'>Download Qrcode</h5>
-					<button type='button' class='close' data-dismiss='modal' aria-label='Close'>
-					<span aria-hidden='true'>&times;</span>
-				  </button>
+					"<div class='row'>
+						<div><a style='padding-left: 12px;'>".QrCode::size(35)->generate($row->kode_box_sistem)."</a></div>
+						<div><button type='button' class='btn btn-sm btn-warning' data-toggle='modal' data-target='#Modal".$row->id."' >Preview</button></div>
 					</div>
-			
-					<div class='modal-body' id='html-content-holder".$row->id."' data-id='".$row->id."' style='background-color: #FFFFFF;  
-					color: #000000; width: 500px; padding-top: 10px;'>
 
-					<div class='row'>
-						<div class='col-lg-5'>
-						<img src='https://chart.googleapis.com/chart?chs=500x500&cht=qr&chl=$row->kode_box_sistem' 
-								id='noregNow' data=".$row->kode_box_sistem."
-								onclick='#' alt='Barcode' style='width:250px;height:250px;'>
+					<div class='modal fade' id='Modal".$row->id."' data-id='".$row->id."'>
+						<div class='modal-dialog' role='document'>
+							<div class='modal-content'>
+								<div class='modal-header'>
+									<h5 class='modal-title' id='exampleModalLabel'>Download Qrcode</h5>
+									<button type='button' class='close' data-dismiss='modal' aria-label='Close'>
+										<span aria-hidden='true'>&times;</span>
+									</button>
 								</div>
-						<div class='col-lg-7' style='padding-top: 40px; padding-left: 40px'>
-								<h4 style='font-size:20px'>".$client->nama."<br><br>
-								Kode Box :<br>
-								".$row->kode_box_sistem."<br><br>
-								Nomor Box :<br>
-								".$row->kode_box."
-								</h4>
+					
+								<div class='modal-body' id='html-content-holder".$row->id."' data-id='".$row->id."' style='background-color: #FFFFFF;  
+									color: #000000; width: 500px; padding-top: 10px;'>
+
+									<div class='row'>
+										<div class='col-lg-5' style='margin-top: 30px;'>
+											".QrCode::size(170)->generate($row->kode_box_sistem)."
+										</div>
+										
+										<div class='col-lg-7' style='padding-top: 40px; padding-left: 40px'>
+											<h4 style='font-size:20px'>".$client->nama."<br><br>
+												Kode Box :<br>
+												".$row->kode_box_sistem."<br><br>
+												Nomor Box :<br>
+												".$row->kode_box."
+											</h4>
+										</div>
+									</div>
 								</div>
-					</div>
-					</div>
-					<div class='modal-footer'>
-					<button type='button' class='btn' data-dismiss='modal'>Close</button>
-					
-					
-					</div>
-				</div>
-				
-			</div>	
+								<div class='modal-footer'>
+									<button type='button' class='btn' data-dismiss='modal'>Close</button>
+								</div>
+							</div>
+						</div>	
+					</div>	
 						");},"image"=>1
 
 			];
@@ -393,7 +386,6 @@ use function PHPUnit\Framework\isEmpty;
 	    */
 	    public function hook_before_add(&$postdata) {        
 	        //Your code here
-
 	    }
 
 	    /* 
@@ -418,7 +410,6 @@ use function PHPUnit\Framework\isEmpty;
 	    */
 	    public function hook_before_edit(&$postdata,$id) {        
 	        //Your code here
-
 	    }
 
 	    /* 
@@ -531,18 +522,9 @@ use function PHPUnit\Framework\isEmpty;
 				}
 			}
 			CRUDBooster::redirect(CRUDBOOSTER::mainpath(), cbLang("alert_update_data_success"), 'success');
-		  }
+		}
 
-		  public function getPrint_report($id)
-		  {
-			  $data = DB::table('box')->where('id', $id)->first();
-			  $foto = asset('/' . $data->kode_box);
-			  $barcode ='https://chart.googleapis.com/chart?chs=300x300&cht=qr&chl='.$data->kode_box;
-			  $pdf = PDF::loadView('label.label', compact('data', 'foto', 'barcode'));
-			  return $pdf->stream('Barcode' . $foto . '.pdf');
-		  }
-
-		  public function getPrint_label($id){
+		public function getPrint_label($id){
 			$data = DB::table('box')->where('id', $id)->first();
 			$client = DB::table('client')->where('id', $data->client_id)->first();
 			$foto = asset('/' . $data->kode_box_sistem);

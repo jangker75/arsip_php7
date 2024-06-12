@@ -7,6 +7,7 @@ use Session;
 	use PDF;
 	use CRUDBooster;
 	use Maatwebsite\Excel\Facades\Excel;
+use stdClass;
 
 class AdminBoxController extends \crocodicstudio\crudbooster\controllers\CBController {
 
@@ -529,69 +530,91 @@ class AdminBoxController extends \crocodicstudio\crudbooster\controllers\CBContr
 	    	$file = Request::file('userfile');
 	    	$file->move(public_path('import'),$file->getClientOriginalName());
 			$dataimport = Excel::toArray(new BoxImport, public_path('import/'.$file->getClientOriginalName()));
-	    	// \Excel::filter('chunk')->selectSheetsByIndex(0)->load(public_path('import/'.$file->getClientOriginalName()))->chunk(500,function($result) { 
-	    		$no = 1;
-			    foreach($dataimport[0] as $row) {
-					// dd($row);
-						$a = [];
-						if ($row['nomor_bantex'] == '1') {
-							
-						$a['client_id'] = $this->insertClient($row['client']);
-				    	$a['cabang_id'] = $this->insertCabang($row['cabang'],$a['client_id']);
-				    	$a['unit_kerja_id'] = $this->insertUnitkerja($row['unit_kerja'],$a['client_id'],$a['cabang_id']);
-				    	$a['lokasi_vault_id'] = $this->insertLokasivault($row['lokasi_vault']);
-						// $a['jenis_dok_id'] = $this->insertJenisdok($row['jenis_dokumen']);
-				    	$a['nama'] = $row['nama_pengirim'];
-				    	// $a['jumlah_dok'] = $row['jumlah_dokumen'];
-				    	$a['nomor_rak'] = $row['nomor_rak'];
-				    	$a['keterangan'] = $row['keterangan'];
-				    	$a['status_id'] = '1';
-						$a['status_approve'] = '1';
-						$a['kode_box'] = $row['nomor_box'];
-						
-						// $year = date("Y");
-						$date = date("d-m-Y");
-						$a['tgl_input'] = $date;
-						$a['tgl_pemindahan'] = strval($row['tanggal_pemindahan']);
-						
-						$rowClient =  DB::table('client')
-						->where('id', $a['client_id'])
-						// ->select('nama')
-						->first();
-						$lastrow = DB::table('box')->insertGetId($a);
-						// $comb_kodebox = $rowClient->nama.strval($this->getcounter()->batas_bawah+$this->getcounter()->counter_box);
-						$comb_kodebox = "MDS".strval($this->getcounter()->batas_bawah+$this->getcounter()->counter_box);
-						// $nospace = trim($comb_kodebox, ' ');
-						$trim_kodebox = trim($a['kode_box']);
-						DB::table('box')->where('id',$lastrow)->update(['kode_box_sistem'=>$comb_kodebox]);
-							// echo $no.' | '.$a['nama'].' | '.$nospace.' | Imported<br/>';
-							echo $no.' | '.$a['nama'].' | '.$a['kode_box'].' | Imported<br/>';
-						// if($comb_kodebox == ''){
-						// 	DB::table('box')->where('id',$lastrow)->update(['kode_box_sistem'=>$comb_kodebox]);
-						// 	// echo $no.' | '.$a['nama'].' | '.$nospace.' | Imported<br/>';
-						// 	echo $no.' | '.$a['nama'].' | '.$a['kode_box'].' | Imported<br/>';
-						// }else{
-						// 	DB::table('box')->where('id',$lastrow)->update(['kode_box_sistem'=>$comb_kodebox]);
-						// 	echo $no.' | '.$a['nama'].' | '.$a['kode_box'].' | Imported<br/>';
-						// }
-						
-						$no++;
-						$this->updateCounter();
-						logHistoryBox($lastrow);
-						// $cek = DB::table('box') -> where('id', $lastrow) -> orderby('created_at', 'desc') -> first();
-						// DB::table('history_update_box') -> insertGetId(['status_id' => $cek -> status_id, 'user' => CRUDBooster::myName(), 
-						// 'box_id' => $cek -> id, 'cabang_id' => $cek -> cabang_id, 'client_id' => $cek -> client_id, 
-						// 'unit_kerja_id' => $cek -> unit_kerja_id,'jenis_dok_id' => $cek -> jenis_dok_id, 
-						// 'nama' => $cek-> nama, 'jumlah_dok' => $cek -> jumlah_dok, 'nomor_rak' => $cek -> nomor_rak,
-						// 'tgl_input' => $cek -> tgl_input,
-						// 'kode_box' => $cek -> kode_box, 'keterangan' => $cek -> keterangan, 'tgl_pemindahan' => $cek -> tgl_pemindahan]);
-						$a['sequence'] = $row['sequence'];
-						$this->insertListBantex($row['jenis_dokumen_atau_nama_debitur'], $a['sequence']);
-					}else{
-						$a['sequence'] = $row['sequence'];
-						$this->insertListBantex($row['jenis_dokumen_atau_nama_debitur'], $a['sequence']);
-					}
+	    	// \Excel::filter('chunk')->selectSheetsByIndex(0)->load(public_path('import/'.$file->getClientOriginalName()))->chunk(500,function($result) { for
+			$listNomorRak = [];
+			$btnBack = '<br/><button style="cursor: pointer;"><a href="'.CRUDBooster::mainpath('').'" style="text-decoration:none;">&laquo; Kembali</a></button>';
+			for ($i=0; $i < count($dataimport[0]); $i++) { 
+				$rowRak = trim($dataimport[0][$i]["nomor_rak"]);
+				if($rowRak == null || $rowRak == ""){
+					continue;
 				}
+				$rowRak = str_replace(" ","", $rowRak);
+				array_push($listNomorRak, $rowRak);
+			}
+			$listExisting = [];
+			if(count($listNomorRak) > 0){
+				$listExisting = DB::table('m_rack')->whereIn("nomor_rak", $listNomorRak)->get(["nomor_rak", "id"]);
+			}
+			$mappNomorRakId = new stdClass();
+			foreach ($listExisting as $value) {
+				$mappNomorRakId->{$value->nomor_rak} = $value->id;
+			}
+			$no = 1;
+			foreach($dataimport[0] as $row) {
+				// dd($row);
+					$a = [];
+				if ($row['nomor_bantex'] == '1') {
+					
+					$row['nomor_rak'] = str_replace(" ","", trim($row['nomor_rak']));
+					$a['client_id'] = $this->insertClient($row['client']);
+					$a['cabang_id'] = $this->insertCabang($row['cabang'],$a['client_id']);
+					$a['unit_kerja_id'] = $this->insertUnitkerja($row['unit_kerja'],$a['client_id'],$a['cabang_id']);
+					$a['lokasi_vault_id'] = $this->insertLokasivault($row['lokasi_vault']);
+					// $a['jenis_dok_id'] = $this->insertJenisdok($row['jenis_dokumen']);
+					$a['nama'] = $row['nama_pengirim'];
+					// $a['jumlah_dok'] = $row['jumlah_dokumen'];
+					$a['nomor_rak'] = $row['nomor_rak'];
+					$a['keterangan'] = $row['keterangan'];
+					$a['status_id'] = '1';
+					$a['status_approve'] = '1';
+					$a['kode_box'] = $row['nomor_box'];
+					
+					// $year = date("Y");
+					$date = date("d-m-Y");
+					$a['tgl_input'] = $date;
+					$a['tgl_pemindahan'] = strval($row['tanggal_pemindahan']);
+					
+					if(isset($mappNomorRakId->{$row['nomor_rak']})){
+						$a['nomor_rak_id'] = $mappNomorRakId->{$row['nomor_rak']};
+					}
+					// $rowClient =  DB::table('client')
+					// ->where('id', $a['client_id'])
+					// ->first();
+					$lastrow = DB::table('box')->insertGetId($a);
+					// $comb_kodebox = $rowClient->nama.strval($this->getcounter()->batas_bawah+$this->getcounter()->counter_box);
+					$comb_kodebox = "MDS".strval($this->getcounter()->batas_bawah+$this->getcounter()->counter_box);
+					// $nospace = trim($comb_kodebox, ' ');
+					// $trim_kodebox = trim($a['kode_box']);
+					DB::table('box')->where('id',$lastrow)->update(['kode_box_sistem'=>$comb_kodebox]);
+						// echo $no.' | '.$a['nama'].' | '.$nospace.' | Imported<br/>';
+						echo $no.' | '.$a['nama'].' | '.$a['kode_box'].' | Imported<br/>';
+					// if($comb_kodebox == ''){
+					// 	DB::table('box')->where('id',$lastrow)->update(['kode_box_sistem'=>$comb_kodebox]);
+					// 	// echo $no.' | '.$a['nama'].' | '.$nospace.' | Imported<br/>';
+					// 	echo $no.' | '.$a['nama'].' | '.$a['kode_box'].' | Imported<br/>';
+					// }else{
+					// 	DB::table('box')->where('id',$lastrow)->update(['kode_box_sistem'=>$comb_kodebox]);
+					// 	echo $no.' | '.$a['nama'].' | '.$a['kode_box'].' | Imported<br/>';
+					// }
+					
+					$no++;
+					$this->updateCounter();
+					logHistoryBox($lastrow);
+					// $cek = DB::table('box') -> where('id', $lastrow) -> orderby('created_at', 'desc') -> first();
+					// DB::table('history_update_box') -> insertGetId(['status_id' => $cek -> status_id, 'user' => CRUDBooster::myName(), 
+					// 'box_id' => $cek -> id, 'cabang_id' => $cek -> cabang_id, 'client_id' => $cek -> client_id, 
+					// 'unit_kerja_id' => $cek -> unit_kerja_id,'jenis_dok_id' => $cek -> jenis_dok_id, 
+					// 'nama' => $cek-> nama, 'jumlah_dok' => $cek -> jumlah_dok, 'nomor_rak' => $cek -> nomor_rak,
+					// 'tgl_input' => $cek -> tgl_input,
+					// 'kode_box' => $cek -> kode_box, 'keterangan' => $cek -> keterangan, 'tgl_pemindahan' => $cek -> tgl_pemindahan]);
+					$a['sequence'] = $row['sequence'];
+					$this->insertListBantex($row['jenis_dokumen_atau_nama_debitur'], $a['sequence']);
+				}else{
+					$a['sequence'] = $row['sequence'];
+					$this->insertListBantex($row['jenis_dokumen_atau_nama_debitur'], $a['sequence']);
+				}
+			}
+			echo $btnBack;
 			// });
 		}
 		private function insertClient($nama) {
