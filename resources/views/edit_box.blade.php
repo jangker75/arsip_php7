@@ -4,6 +4,9 @@
     <!-- Your html goes here -->
     <form method='POST' enctype="multipart/form-data" action='{{ CRUDBooster::mainpath('edit-box') . "/" . $row->id }}' >
         {{ csrf_field() }}
+        <p>
+            <a href="{{action('AdminBoxController@getIndex')}}" class="btn btn-sm btn-primary">&laquo; Kembali</a>
+        </p>
         <div class='panel panel-default'>
             <div class='panel-heading'>
                 {{-- <a href="{{ CRUDBooster::mainpath('') }}" class="btn btn-warning"><i
@@ -32,7 +35,7 @@
                             <tr>
                                 <td><label>Client</label></td>
                                 <td>
-                                    <select class="form-control" name="client_id" id="client_id">
+                                    <select class="form-control select2" name="client_id" id="client_id">
                                         @foreach ($client_list as $client)
                                             @php
                                                 $selected = ($row->client_id == $client->id) ? "selected" : "";
@@ -47,7 +50,7 @@
                             <tr>
                                 <td><label>Cabang</label></td>
                                 <td>
-                                    <select class="form-control" name="cabang_id" id="cabang_id">
+                                    <select class="form-control select2" name="cabang_id" id="cabang_id">
                                         @foreach ($cabang_list as $cabang)
                                             @php
                                                 $selected = ($row->cabang_id == $cabang->id) ? "selected" : "";
@@ -62,7 +65,7 @@
                             <tr>
                                 <td><label>Unit Kerja</label></td>
                                 <td>
-                                    <select class="form-control" name="unit_kerja_id" id="unit_kerja_id">
+                                    <select class="form-control select2" name="unit_kerja_id" id="unit_kerja_id">
                                         @foreach ($unit_kerja_list as $unit_kerja)
                                             @php
                                                 $selected = ($row->unit_kerja_id == $unit_kerja->id) ? "selected" : "";
@@ -84,7 +87,7 @@
                             <tr>
                                 <td><label>Lokasi Penyimpanan Vault</label></td>
                                 <td>
-                                    <select name="lokasi_vault_id" id="lokasi_vault_id" class="form-control">
+                                    <select name="lokasi_vault_id" id="lokasi_vault_id" class="form-control select2">
                                         @foreach ($lokasi_vault_list as $item)
                                             <option value="{{ $item->id }}"
                                                 {{ $item->id == $row->lokasi_vault_id ? 'selected' : '' }}>
@@ -110,13 +113,20 @@
                             <tr>
                                 <td><label>Nomor Rak</label></td>
                                 <td>
-                                    <input name='nomor_rak' class='form-control' value='{{ $row->nomor_rak }}' />
+                                    {{-- <input name='nomor_rak' class='form-control' value='{{ $row->nomor_rak }}' /> --}}
+                                    <select name="nomor_rak_id" id="nomor_rak_id" required class="form-control select2">
+                                        @foreach ($rak_list as $item)
+                                            <option value="{{ $item->id }}"
+                                                {{ $item->id == $row->nomor_rak_id ? 'selected' : '' }}>{{ $item->nomor_rak }}
+                                            </option>
+                                        @endforeach
+                                    </select>
                                 </td>
                             </tr>
                             <tr>
                                 <td><label>Status</label></td>
                                 <td>
-                                    <select name="status_id" id="status_id" required class="form-control">
+                                    <select name="status_id" id="status_id" required class="form-control select2">
                                         @foreach ($status_list as $item)
                                             <option value="{{ $item->id }}"
                                                 {{ $item->id == $row->status_id ? 'selected' : '' }}>{{ $item->nama }}
@@ -170,11 +180,36 @@
         </div>
     </form>
 @endsection
+@push('head')
+    <link rel='stylesheet' href='<?php echo asset("vendor/crudbooster/assets/select2/dist/css/select2.min.css")?>'/>
+    <style type="text/css">
+        .select2-container--default .select2-selection--single {
+            border-radius: 0px !important
+        }
+
+        .select2-container .select2-selection--single {
+            height: 35px
+        }
+
+        .select2-container--default .select2-selection--multiple .select2-selection__choice {
+            background-color: #3c8dbc !important;
+            border-color: #367fa9 !important;
+            color: #fff !important;
+        }
+
+        .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+            color: #fff !important;
+        }
+    </style>
+@endpush
+
 @push('bottom')
+<script src='<?php echo asset("vendor/crudbooster/assets/select2/dist/js/select2.full.min.js")?>'></script>
 <script>
     $(document).ready(function(){
-
+        
     })
+    $(".select2").select2();
     $("#client_id").on("change", function(){
         let clientId = $(this).find(":selected").val()
         $.ajax({

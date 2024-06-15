@@ -50,7 +50,8 @@ use function PHPUnit\Framework\isEmpty;
 			$this->col[] = ["label"=>"Nama Pengirim","name"=>"nama"];
 			// $this->col[] = ["label"=>"Jumlah Bantex","name"=>"jumlah_dok"];
 			$this->col[] = ["label"=>"Lokasi Penyimpanan Vault","name"=>"lokasi_vault_id","join"=>"lokasi_vault,nama"];
-			$this->col[] = ["label"=>"Nomor Rak","name"=>"nomor_rak"];
+			// $this->col[] = ["label"=>"Nomor Rak","name"=>"nomor_rak"];
+			$this->col[] = ["label"=>"Nomor Rak","name"=>"nomor_rak_id","join"=>"m_rack,nomor_rak"];
 			$this->col[] = ["label"=>"Nomor Box","name"=>"kode_box"];
 			$this->col[] = ["label"=>"Kode Box","name"=>"kode_box_sistem"];
 			$this->col[] = ["label"=>"Tanggal Pemindahan","name"=>"tgl_pemindahan"];
@@ -139,7 +140,8 @@ use function PHPUnit\Framework\isEmpty;
 			$this->form[] = ['label'=>'Nama Pengirim','name'=>'nama','type'=>'text','validation'=>'required|string|min:3|max:70','width'=>'col-sm-10','placeholder'=>'You can only enter the letter only'];
 			$this->form[] = ['label'=>'Jumlah Bantex','name'=>'jumlah_dok','type'=>'number','validation'=>'|integer|min:0','width'=>'col-sm-10'];
 			$this->form[] = ['label'=>'Lokasi Penyimpanan Vault','name'=>'lokasi_vault_id','type'=>'select2','validation'=>'required|min:1|max:255','width'=>'col-sm-10','datatable'=>'lokasi_vault,nama'];
-			$this->form[] = ['label'=>'Nomor Rak','name'=>'nomor_rak','type'=>'text','validation'=>'|min:1|max:255','width'=>'col-sm-10'];
+			// $this->form[] = ['label'=>'Nomor Rak','name'=>'nomor_rak','type'=>'text','validation'=>'|min:1|max:255','width'=>'col-sm-10'];
+			$this->form[] = ['label'=>'Nomor Rak','name'=>'nomor_rak_id','type'=>'select2','validation'=>'required|min:0|max:255','width'=>'col-sm-10','datatable'=>'m_rack,nomor_rak'];
 			$this->form[] = ['label'=>'Nomor Box','name'=>'kode_box','type'=>'text','validation'=>'required|min:1|max:255','width'=>'col-sm-10'];
 			$this->form[] = ['label'=>'tgl_pemindahan','name'=>'tgl_pemindahan','type'=>'text','validation'=>'|min:1|max:255','width'=>'col-sm-10'];
 			$this->form[] = ['label'=>'Keterangan','name'=>'keterangan','type'=>'textarea','validation'=>'|string|min:5|max:5000','width'=>'col-sm-10'];
@@ -488,6 +490,7 @@ use function PHPUnit\Framework\isEmpty;
 			// dd($data['row']->toSql());
 			$data['client_list'] = DB::table('client')->get(['id', 'nama']);
 			$data['cabang_list'] = DB::table('cabang')->where('client_id', $data['row']->client_id)->get(['id', 'nama']);
+			$data['rak_list'] = DB::table('m_rack')->get(['id', 'nomor_rak']);
 			$data['unit_kerja_list'] = DB::table('unit_kerja')
 			->where('client_id', $data['row']->client_id)
 			->where('cabang_id', $data['row']->cabang_id)->get(['id', 'nama']);
@@ -505,6 +508,7 @@ use function PHPUnit\Framework\isEmpty;
 				  "lokasi_vault_id" => request('lokasi_vault_id'),
 				  "jumlah_dok" => request('jumlah_dok'),
 				  "nomor_rak" => request('nomor_rak'),
+				  "nomor_rak_id" => request('nomor_rak_id'),
 				  "status_id" => request('status_id'),
 				  "client_id" => request('client_id'),
 				  "unit_kerja_id" => request('unit_kerja_id'),

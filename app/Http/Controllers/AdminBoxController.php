@@ -44,7 +44,8 @@ class AdminBoxController extends \crocodicstudio\crudbooster\controllers\CBContr
 			$this->col[] = ["label"=>"Nama Pengirim","name"=>"nama"];
 			// $this->col[] = ["label"=>"Jumlah Bantex","name"=>"jumlah_dok"];
 			$this->col[] = ["label"=>"Lokasi Penyimpanan Vault","name"=>"lokasi_vault_id","join"=>"lokasi_vault,nama"];
-			$this->col[] = ["label"=>"Nomor Rak","name"=>"nomor_rak"];
+			// $this->col[] = ["label"=>"Nomor Rak","name"=>"nomor_rak"];
+			$this->col[] = ["label"=>"Nomor Rak","name"=>"nomor_rak_id","join"=>"m_rack,nomor_rak"];
 			$this->col[] = ["label"=>"Nomor Box","name"=>"kode_box"];
 			$this->col[] = ["label"=>"Kode Box","name"=>"kode_box_sistem"];
 			$this->col[] = ["label"=>"Tanggal Pemindahan","name"=>"tgl_pemindahan"];
@@ -121,7 +122,8 @@ class AdminBoxController extends \crocodicstudio\crudbooster\controllers\CBContr
 			$this->form[] = ['label'=>'Nama Pengirim','name'=>'nama','type'=>'text','validation'=>'required|string|min:0|max:70','width'=>'col-sm-10','placeholder'=>'You can only enter the letter only'];
 			$this->form[] = ['label'=>'Lokasi Penyimpanan Vault','name'=>'lokasi_vault_id','type'=>'select2','validation'=>'required|min:0|max:255','width'=>'col-sm-10','datatable'=>'lokasi_vault,nama'];
 			$this->form[] = ['label'=>'Jumlah Bantex','name'=>'jumlah_dok','type'=>'number','validation'=>'|integer|min:0','width'=>'col-sm-10'];
-			$this->form[] = ['label'=>'Nomor Rak','name'=>'nomor_rak','type'=>'text','validation'=>'string|min:0|max:255','width'=>'col-sm-10'];
+			// $this->form[] = ['label'=>'Nomor Rak','name'=>'nomor_rak','type'=>'text','validation'=>'string|min:0|max:255','width'=>'col-sm-10'];
+			$this->form[] = ['label'=>'Nomor Rak','name'=>'nomor_rak_id','type'=>'select2','validation'=>'required|min:0|max:255','width'=>'col-sm-10','datatable'=>'m_rack,nomor_rak'];
 			$this->form[] = ['label'=>'Tanggal Pemindahan','name'=>'tgl_pemindahan','type'=>'text','validation'=>'|min:0|max:255','width'=>'col-sm-10'];
 			$this->form[] = ['label'=>'Tanggal Input','name'=>'tgl_input','readonly'=>'true','width'=>'col-sm-10'];
 			$this->form[] = ['label'=>'Keterangan','name'=>'keterangan','type'=>'textarea','validation'=>'|string|min:0|max:5000','width'=>'col-sm-10'];
