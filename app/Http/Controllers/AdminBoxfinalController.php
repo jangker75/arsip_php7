@@ -515,16 +515,23 @@ use function PHPUnit\Framework\isEmpty;
 				  "cabang_id" => request('cabang_id'),
 				  "nama" => request('nama'),
 			  ]);
-
-			for ($i=1; $i < 4; $i++) { 
-				if (request()->hasFile("foto_{$i}")) {
-					$foto = CRUDBooster::uploadFile("foto_{$i}", true);
-					DB::table('box')->where('id', $id)
+			if(request()->hasFile("file_atc")){
+				$atc = CRUDBooster::uploadFile("file_atc", true);
+				DB::table('box')->where('id', $id)
 					->update([
-						"foto_{$i}" => $foto
+						"file_atc" => $atc
 					]);
-				}
 			}
+
+			// for ($i=1; $i < 4; $i++) { 
+			// 	if (request()->hasFile("foto_{$i}")) {
+			// 		$foto = CRUDBooster::uploadFile("foto_{$i}", true);
+			// 		DB::table('box')->where('id', $id)
+			// 		->update([
+			// 			"foto_{$i}" => $foto
+			// 		]);
+			// 	}
+			// }
 			CRUDBooster::redirect(CRUDBOOSTER::mainpath(), cbLang("alert_update_data_success"), 'success');
 		}
 
@@ -586,6 +593,12 @@ use function PHPUnit\Framework\isEmpty;
 			CRUDBooster::redirect($_SERVER['HTTP_REFERER'],"Silahkan pilih data dulu utk generate QR !","warning");
 			// unlink($pathToFile);
 			// return Redirect::to('https://www.pakainfo.com');
+		}
+		public function getDeleteAtc()
+		{
+			$id = request("id");
+			DB::table('box')->where("id", $id)->update(["file_atc" => ""]);
+			CRUDBooster::redirect($_SERVER['HTTP_REFERER'],"Delete data berhasil !","success");
 		}
 	    //By the way, you can still create your own method in here... :) 
 

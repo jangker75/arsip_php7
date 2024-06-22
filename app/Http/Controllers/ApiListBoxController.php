@@ -43,14 +43,12 @@ use Illuminate\Support\Facades\Auth;
 						// if ($search != null || $search != '') {
 						// 	$query = $query->leftjoin('box_detail', 'box_detail.box_id', '=','box.id');
 						// }
-						
 						->leftjoin('client', 'client.id','=','box.client_id')
 						->leftjoin('cabang', 'cabang.id','=','box.cabang_id')
 						->leftjoin('status', 'status.id','=','box.status_id')
 						->leftjoin('unit_kerja', 'unit_kerja.id','=','box.unit_kerja_id')
 						->leftjoin('jenis_dokumen', 'jenis_dokumen.id','=','box.jenis_dok_id')
 						->leftjoin('lokasi_vault', 'lokasi_vault.id','=','box.lokasi_vault_id');
-
 				if($clientId != null && $clientId != 0 ){
 					$query->where('box.client_id', $clientId);
 				}
@@ -61,23 +59,44 @@ use Illuminate\Support\Facades\Auth;
 					$query->where('box.unit_kerja_id', Request::get('user')->unit_kerja_id);
 				}
 				if ($search != null || $search != '') {
+					$boxDtlSearch = DB::table('box_detail')->select('box_id')->where('nama', 'LIKE', "%$search%")
+								->skip($offset)->limit($limit)->pluck("box_id")->toArray();
+					
+					// dd($boxDtlSearch);
 					$box = (clone $query)
-						->where(function($q)use($search){
-							$q->where('box.kode_box', 'LIKE',"%${search}%")
-							->orWhere('box.kode_box_sistem','LIKE',"%${search}%")
-							->orWhere('box.nama', 'LIKE',"%${search}%");
+						->where(function($q)use($search, $boxDtlSearch){
+							$q->where('box.kode_box', 'LIKE',"%$search%")
+							->orWhere('box.kode_box_sistem','LIKE',"%$search%")
+							->orWhere('box.nama', 'LIKE',"%$search%");
+							if(count($boxDtlSearch) > 0){
+								$q->orWhereIn("box.id", $boxDtlSearch);
+							}
 						})
 						->orderBy('id', 'desc')
 						->skip($offset)->limit($limit)
 						->get();
+						// $query = str_replace(array('?'), array('\'%s\''), $box->toSql());
+						// $query = vsprintf($query, $box->getBindings());
+						// var_dump($query);
+						// exit;
+
 				} else {
 					$box = (clone $query)
 						->orderBy('id', 'desc')
 						->skip($offset)->limit($limit)
 						->get();
 				}
-				// dd($query->toSql());
+				// $listIdBox = [];
+				// foreach ($box as $row) {
+				// 	if(in_array($row->id, $listIdBox)){
+				// 		continue;
+				// 	}
+				// 	array_push($listIdBox, $row->id);
+				// }
+				
+				
 				$field = [];
+				
 				foreach ($box as $row) {
 					$data['id'] = (int) $row->id;
 					$data['nama'] = (string) $row->nama ?? '';

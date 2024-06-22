@@ -2,10 +2,10 @@
 @extends('crudbooster::admin_template')
 @section('content')
     <!-- Your html goes here -->
-    <form method='POST' enctype="multipart/form-data" action='{{ CRUDBooster::mainpath('edit-box') . "/" . $row->id }}' >
+    <form method='POST' id="mainform" enctype="multipart/form-data" action='{{ CRUDBooster::mainpath('edit-box') . "/" . $row->id }}' >
         {{ csrf_field() }}
         <p>
-            <a href="{{action('AdminBoxController@getIndex')}}" class="btn btn-sm btn-primary">&laquo; Kembali</a>
+            <a href="{{ CRUDBooster::mainpath('')}}" class="btn btn-sm btn-primary">&laquo; Kembali</a>
         </p>
         <div class='panel panel-default'>
             <div class='panel-heading'>
@@ -124,6 +124,18 @@
                                 </td>
                             </tr>
                             <tr>
+                                <td><label>Attachment</label></td>
+                                <td>
+                                    <div class="row">
+                                        <input type="file" name="file_atc" accept=".pdf">
+                                        @if($row->file_atc != null && $row->file_atc != "")
+                                            <a class="btn btn-warning" target="_blank" href="{{ asset($row->file_atc) }}">Download Image</a>
+                                            <button type="button" id="deleteimage" class="btn btn-danger">Delete Image</button>
+                                        @endif
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
                                 <td><label>Status</label></td>
                                 <td>
                                     <select name="status_id" id="status_id" required class="form-control select2">
@@ -135,6 +147,7 @@
                                     </select>
                                 </td>
                             </tr>
+
                             {{-- <tr>
                                 <td><label>Foto Penyimpanan</label></td>
                                 <td>
@@ -179,6 +192,9 @@
             </div>
         </div>
     </form>
+    <form action="{{ CRUDBooster::mainpath("delete-atc") }}" style="display: none;" id="linkdel" >
+        <input type="hidden" name="id" value="{{ $row->id }}">
+    </form>
 @endsection
 @push('head')
     <link rel='stylesheet' href='<?php echo asset("vendor/crudbooster/assets/select2/dist/css/select2.min.css")?>'/>
@@ -209,6 +225,25 @@
     $(document).ready(function(){
         
     })
+    $("#deleteimage").on("click", function(){
+            // e.preventDefault();
+            // $("#linkdel").trigger("click")
+            swal({  
+                title:"Delete", 
+                text: "Are you sure want to delete?",
+                showCancelButton: true,
+                type: "warning",
+                closeOnConfirm: false,
+                showLoaderOnConfirm: true
+            },
+            function(isconfirm){
+                console.log(isconfirm);
+                $("#linkdel").submit()
+                // if(isconfirm){
+                //     console.log(isconfirm);
+                // }
+            });
+        });
     $(".select2").select2();
     $("#client_id").on("change", function(){
         let clientId = $(this).find(":selected").val()

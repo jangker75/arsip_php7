@@ -19,6 +19,7 @@ use Session;
 		    public function hook_before(&$postdata) {
 		        //This method will be execute before run the main process
 				$box_id = g("box_id");
+				$kode_box_sistem = g("kode_box_sistem");
 				$row = DB::table('box')
 						->select([
 							'box.*', 'client.nama as nama_client', 'cabang.nama as nama_cabang',
@@ -31,10 +32,15 @@ use Session;
 						->leftjoin('status', 'status.id','=','box.status_id')
 						->leftjoin('unit_kerja', 'unit_kerja.id','=','box.unit_kerja_id')
 						->leftjoin('jenis_dokumen', 'jenis_dokumen.id','=','box.jenis_dok_id')
-						->leftjoin('lokasi_vault', 'lokasi_vault.id','=','box.lokasi_vault_id')
-						->where('box.id', $box_id)
-						->first();
-
+						->leftjoin('lokasi_vault', 'lokasi_vault.id','=','box.lokasi_vault_id');
+						if($kode_box_sistem != ""){
+							$row->where('box.kode_box_sistem', $kode_box_sistem);
+						}
+						if($box_id != "" && intval($box_id) > 0){
+							$row->where('box.id', $box_id);
+						}
+					$row = $row->first();
+					
 					$data['id'] = $row->id;
 					$data['nama'] = $row->nama;
 					$data['client'] = $row->nama_client;
