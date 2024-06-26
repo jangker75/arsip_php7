@@ -4,7 +4,7 @@
 	use Request;
 	use DB;
 	use CRUDBooster;
-use stdClass;
+	use stdClass;
 
 	class AdminContactUsController extends \crocodicstudio\crudbooster\controllers\CBController {
 

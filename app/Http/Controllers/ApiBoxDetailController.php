@@ -24,8 +24,8 @@ use Session;
 						->select([
 							'box.*', 'client.nama as nama_client', 'cabang.nama as nama_cabang',
 							'status.nama as nama_status', 'unit_kerja.nama as nama_unit_kerja',
-							'jenis_dokumen.nama as nama_jenis_dokumen','lokasi_vault.nama as nama_lokasi_vault'
-							
+							'jenis_dokumen.nama as nama_jenis_dokumen','lokasi_vault.nama as nama_lokasi_vault',
+							'client.is_download_box'
 						])
 						->leftjoin('client', 'client.id','=','box.client_id')
 						->leftjoin('cabang', 'cabang.id','=','box.cabang_id')
@@ -55,6 +55,13 @@ use Session;
 					$data['kode_box_sistem'] = $row -> kode_box_sistem;
 					$data['status_approve'] = $row -> status_approve;
 					$data['tgl_pemindahan'] = $row -> tgl_pemindahan;
+					$data['is_download_box'] = $row -> is_download_box;
+					if($row->file_atc && $row->file_atc != ""){
+						$link = asset($row->file_atc);
+						$data['file_atc'] = $link;
+					}else{
+						$data['file_atc'] = "";
+					}
 					$data['keterangan'] = $row -> keterangan;
 					$foto1 = ($row->foto_1 != null || $row->foto_1 != "") ? asset($row->foto_1) : null;
 					$foto2 = ($row->foto_2 != null || $row->foto_2 != "") ? asset($row->foto_2) : null;

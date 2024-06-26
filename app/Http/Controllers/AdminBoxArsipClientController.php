@@ -5,61 +5,93 @@
 	use DB;
 	use CRUDBooster;
 
-	class AdminDaftarAkunController extends \crocodicstudio\crudbooster\controllers\CBController {
+	class AdminBoxArsipClientController extends \crocodicstudio\crudbooster\controllers\CBController {
 
 	    public function cbInit() {
 
 			# START CONFIGURATION DO NOT REMOVE THIS LINE
-			$this->title_field = "name";
+			$this->title_field = "nama";
 			$this->limit = "20";
 			$this->orderby = "id,desc";
 			$this->global_privilege = false;
 			$this->button_table_action = true;
-			$this->button_bulk_action = true;
+			$this->button_bulk_action = false;
 			$this->button_action_style = "button_icon";
-			$this->button_add = true;
-			$this->button_edit = true;
-			$this->button_delete = true;
+			$this->button_add = false;
+			$this->button_edit = false;
+			$this->button_delete = false;
 			$this->button_detail = true;
-			$this->button_show = true;
+			$this->button_show = false;
 			$this->button_filter = true;
 			$this->button_import = false;
-			$this->button_export = false;
-			$this->table = "cms_users";
+			$this->button_export = true;
+			$this->table = "box";
 			# END CONFIGURATION DO NOT REMOVE THIS LINE
 
 			# START COLUMNS DO NOT REMOVE THIS LINE
 			$this->col = [];
-			$this->col[] = ["label"=>"Name","name"=>"name"];
-			$this->col[] = ["label"=>"Photo","name"=>"photo","image"=>true];
-			$this->col[] = ["label"=>"Email","name"=>"email"];
-			$this->col[] = ["label"=>"Privileges","name"=>"id_cms_privileges","join"=>"cms_privileges,name"];
+			// $this->col[] =  ['label'=>'Tanggal Input','name'=>'created_at','callback_php'=>'date("d-m-Y",strtotime($row->created_at))'];
 			$this->col[] = ["label"=>"Client","name"=>"client_id","join"=>"client,nama"];
 			$this->col[] = ["label"=>"Cabang","name"=>"cabang_id","join"=>"cabang,nama"];
+			$this->col[] = ["label"=>"Unit Kerja","name"=>"unit_kerja_id","join"=>"unit_kerja,nama"];
+			$this->col[] = ["label"=>"Nama Pengirim","name"=>"nama"];
+			$this->col[] = ["label"=>"Lokasi Penyimpanan Vault","name"=>"lokasi_vault_id","join"=>"lokasi_vault,nama"];
+			$this->col[] = ["label"=>"Nomor Rak","name"=>"nomor_rak_id","join"=>"m_rack,nomor_rak"];
+			$this->col[] = ["label"=>"Nomor Box","name"=>"kode_box"];
+			$this->col[] = ["label"=>"Kode Box","name"=>"kode_box_sistem"];
+			$this->col[] = ["label"=>"Tanggal Pemindahan","name"=>"tgl_pemindahan"];
 			# END COLUMNS DO NOT REMOVE THIS LINE
 
 			# START FORM DO NOT REMOVE THIS LINE
 			$this->form = [];
-			$this->form[] = ['label'=>'Name','name'=>'name','type'=>'text','validation'=>'required|string|min:3|max:70','width'=>'col-sm-10','placeholder'=>'You can only enter the letter only'];
-			$this->form[] = ['label'=>'Photo','name'=>'photo','type'=>'upload','validation'=>'required|image|max:3000','width'=>'col-sm-10','help'=>'File types support : JPG, JPEG, PNG, GIF, BMP'];
-			$this->form[] = ['label'=>'Email','name'=>'email','type'=>'email','validation'=>'required|min:1|max:255|email|unique:cms_users','width'=>'col-sm-10','placeholder'=>'Please enter a valid email address'];
-			$this->form[] = ['label'=>'Password','name'=>'password','type'=>'password','validation'=>'min:3|max:32','width'=>'col-sm-10','help'=>'Minimum 5 characters. Please leave empty if you did not change the password.'];
-			$this->form[] = ['label'=>'Cms Privileges','name'=>'id_cms_privileges','type'=>'select2','validation'=>'required|integer|min:0','width'=>'col-sm-10','datatable'=>'cms_privileges,name','datatable_where'=>'cms_privileges.id != 1'];
-			$this->form[] = ['label'=>'Client','name'=>'client_id','type'=>'select2','validation'=>'|integer|min:0','width'=>'col-sm-10','datatable'=>'client,nama', 'help'=>'Kosongkan saja jika privilegesnya MDS'];
-			$this->form[] = ['label'=>'Cabang','name'=>'cabang_id','type'=>'select','validation'=>'|integer|min:0','width'=>'col-sm-10','datatable'=>'cabang,nama','parent_select' => 'client_id', 'help'=>'Kosongkan saja jika mau lihat semua cabang'];
+			$this->form[] = ['label'=>'Kode Box Sistem','name'=>'kode_box_sistem','type'=>'text','validation'=>'required|min:0','width'=>'col-sm-10'];
+			$this->form[] = ['label'=>'Client','name'=>'client_id','type'=>'select2','validation'=>'required|integer|min:0','width'=>'col-sm-10','datatable'=>'client,nama'];
+			$this->form[] = ['label'=>'Cabang','name'=>'cabang_id','type'=>'select','validation'=>'required|integer|min:0','width'=>'col-sm-10','datatable'=>'cabang,nama', 'parent_select'=>'client_id'];
+			$this->form[] = ['label'=>'Unit Kerja','name'=>'unit_kerja_id','type'=>'select','validation'=>'required|integer|min:0','width'=>'col-sm-10','datatable'=>'unit_kerja,nama', 'parent_select'=>'cabang_id'];
+			$this->form[] = ['label'=>'Jenis Dok','name'=>'jenis_dok_id','type'=>'select2','validation'=>'required|min:1|max:255','width'=>'col-sm-10','datatable'=>'jenis_dokumen,nama'];
+			$this->form[] = ['label'=>'Status','name'=>'status_id','type'=>'select2','validation'=>'|min:1|max:255','width'=>'col-sm-10','datatable'=>'status,nama'];
+			$this->form[] = ['label'=>'Nama Pengirim','name'=>'nama','type'=>'text','validation'=>'required|string|min:3|max:70','width'=>'col-sm-10','placeholder'=>'You can only enter the letter only'];
+			$this->form[] = ['label'=>'Jumlah Bantex','name'=>'jumlah_dok','type'=>'number','validation'=>'|integer|min:0','width'=>'col-sm-10'];
+			$this->form[] = ['label'=>'Lokasi Penyimpanan Vault','name'=>'lokasi_vault_id','type'=>'select2','validation'=>'required|min:1|max:255','width'=>'col-sm-10','datatable'=>'lokasi_vault,nama'];
+			// $this->form[] = ['label'=>'Nomor Rak','name'=>'nomor_rak','type'=>'text','validation'=>'|min:1|max:255','width'=>'col-sm-10'];
+			$this->form[] = ['label'=>'Nomor Rak','name'=>'nomor_rak_id','type'=>'select2','validation'=>'required|min:0|max:255','width'=>'col-sm-10','datatable'=>'m_rack,nomor_rak'];
+			$this->form[] = ['label'=>'Nomor Box','name'=>'kode_box','type'=>'text','validation'=>'required|min:1|max:255','width'=>'col-sm-10'];
+			$this->form[] = ['label'=>'tgl_pemindahan','name'=>'tgl_pemindahan','type'=>'text','validation'=>'|min:1|max:255','width'=>'col-sm-10'];
+			$this->form[] = ['label'=>'Keterangan','name'=>'keterangan','type'=>'textarea','validation'=>'|string|min:5|max:5000','width'=>'col-sm-10'];
+			$this->form[] = ['label'=>'File Attachment','name'=>'file_atc','type'=>'upload','validation'=>'|min:5|max:5000','width'=>'col-sm-10'];
+			$this->form[] = ['label'=>'Foto 1','name'=>'foto_1','type'=>'upload','validation'=>'|min:5|max:5000','width'=>'col-sm-10'];
+			# END FORM DO NOT REMOVE THIS LINE
+				$columns[] = ['label'=>'Data/Isi Dokumen','name'=>'nama','type'=>'text','validation'=>'required|string|min:3|max:70','width'=>'col-sm-10','placeholder'=>'You can only enter the letter only'];
+				$columns[] = ['label'=>'Keterangan','name'=>'keterangan','type'=>'text','validation'=>'|min:1|max:255','width'=>'col-sm-10'];
+				// $columns[] = ['label'=>'Status','name'=>'status_id','type'=>'select2','datatable'=>'status,nama'];
+				// $columns[] = ['label'=>'Jenis Dokumen/Nama Debitur','name'=>'nama','type'=>'text','validation'=>'required|string|min:0|max:70','width'=>'col-sm-10','placeholder'=>'You can only enter the letter only'];
+				// $columns[] = ['label'=>'Keterangan','name'=>'keterangan','type'=>'textarea','validation'=>'string|min:0|max:255','width'=>'col-sm-10'];
+				$this->form[] = ['label'=>'List Bantex','name'=>'box_detail','type'=>'child','columns'=>$columns,'table'=>'box_detail','foreign_key'=>'box_id'];
+				
 			# END FORM DO NOT REMOVE THIS LINE
 
 			# OLD START FORM
 			//$this->form = [];
-			//$this->form[] = ["label"=>"Name","name"=>"name","type"=>"text","required"=>TRUE,"validation"=>"required|string|min:3|max:70","placeholder"=>"You can only enter the letter only"];
-			//$this->form[] = ["label"=>"Photo","name"=>"photo","type"=>"upload","required"=>TRUE,"validation"=>"required|image|max:3000","help"=>"File types support : JPG, JPEG, PNG, GIF, BMP"];
-			//$this->form[] = ["label"=>"Email","name"=>"email","type"=>"email","required"=>TRUE,"validation"=>"required|min:1|max:255|email|unique:cms_users","placeholder"=>"Please enter a valid email address"];
-			//$this->form[] = ["label"=>"Password","name"=>"password","type"=>"password","required"=>TRUE,"validation"=>"min:3|max:32","help"=>"Minimum 5 characters. Please leave empty if you did not change the password."];
-			//$this->form[] = ["label"=>"Cms Privileges","name"=>"id_cms_privileges","type"=>"select2","required"=>TRUE,"validation"=>"required|integer|min:0","datatable"=>"cms_privileges,name"];
-			//$this->form[] = ["label"=>"Status","name"=>"status","type"=>"text","required"=>TRUE,"validation"=>"required|min:1|max:255"];
-			//$this->form[] = ["label"=>"Token","name"=>"token","type"=>"text","required"=>TRUE,"validation"=>"required|min:1|max:255"];
-			//$this->form[] = ["label"=>"Token Expired","name"=>"token_expired","type"=>"datetime","required"=>TRUE,"validation"=>"required|date_format:Y-m-d H:i:s"];
+			//$this->form[] = ["label"=>"Cabang Id","name"=>"cabang_id","type"=>"select2","required"=>TRUE,"validation"=>"required|integer|min:0","datatable"=>"cabang,nama"];
 			//$this->form[] = ["label"=>"Client Id","name"=>"client_id","type"=>"select2","required"=>TRUE,"validation"=>"required|integer|min:0","datatable"=>"client,nama"];
+			//$this->form[] = ["label"=>"Unit Kerja Id","name"=>"unit_kerja_id","type"=>"select2","required"=>TRUE,"validation"=>"required|integer|min:0","datatable"=>"unit_kerja,nama"];
+			//$this->form[] = ["label"=>"Lokasi Vault Id","name"=>"lokasi_vault_id","type"=>"select2","required"=>TRUE,"validation"=>"required|integer|min:0","datatable"=>"lokasi_vault,nama"];
+			//$this->form[] = ["label"=>"Jenis Dok Id","name"=>"jenis_dok_id","type"=>"select2","required"=>TRUE,"validation"=>"required|integer|min:0","datatable"=>"jenis_dok,id"];
+			//$this->form[] = ["label"=>"Status Id","name"=>"status_id","type"=>"select2","required"=>TRUE,"validation"=>"required|integer|min:0","datatable"=>"status,nama"];
+			//$this->form[] = ["label"=>"Status Approve","name"=>"status_approve","type"=>"number","required"=>TRUE,"validation"=>"required|integer|min:0"];
+			//$this->form[] = ["label"=>"Nama","name"=>"nama","type"=>"text","required"=>TRUE,"validation"=>"required|string|min:3|max:70","placeholder"=>"You can only enter the letter only"];
+			//$this->form[] = ["label"=>"Jumlah Dok","name"=>"jumlah_dok","type"=>"number","required"=>TRUE,"validation"=>"required|integer|min:0"];
+			//$this->form[] = ["label"=>"Nomor Rak","name"=>"nomor_rak","type"=>"text","required"=>TRUE,"validation"=>"required|min:1|max:255"];
+			//$this->form[] = ["label"=>"Nomor Rak Id","name"=>"nomor_rak_id","type"=>"select2","required"=>TRUE,"validation"=>"required|integer|min:0","datatable"=>"nomor_rak,id"];
+			//$this->form[] = ["label"=>"Kode Box","name"=>"kode_box","type"=>"text","required"=>TRUE,"validation"=>"required|min:1|max:255"];
+			//$this->form[] = ["label"=>"Kode Box Sistem","name"=>"kode_box_sistem","type"=>"text","required"=>TRUE,"validation"=>"required|min:1|max:255"];
+			//$this->form[] = ["label"=>"File Atc","name"=>"file_atc","type"=>"text","required"=>TRUE,"validation"=>"required|min:1|max:255"];
+			//$this->form[] = ["label"=>"Tgl Input","name"=>"tgl_input","type"=>"text","required"=>TRUE,"validation"=>"required|min:1|max:255"];
+			//$this->form[] = ["label"=>"Tgl Pemindahan","name"=>"tgl_pemindahan","type"=>"text","required"=>TRUE,"validation"=>"required|min:1|max:255"];
+			//$this->form[] = ["label"=>"Foto 1","name"=>"foto_1","type"=>"text","required"=>TRUE,"validation"=>"required|min:1|max:255"];
+			//$this->form[] = ["label"=>"Foto 2","name"=>"foto_2","type"=>"text","required"=>TRUE,"validation"=>"required|min:1|max:255"];
+			//$this->form[] = ["label"=>"Foto 3","name"=>"foto_3","type"=>"text","required"=>TRUE,"validation"=>"required|min:1|max:255"];
+			//$this->form[] = ["label"=>"Keterangan","name"=>"keterangan","type"=>"text","required"=>TRUE,"validation"=>"required|min:1|max:255"];
 			# OLD END FORM
 
 			/* 
@@ -247,7 +279,15 @@
 	    */
 	    public function hook_query_index(&$query) {
 	        //Your code here
-	            $query->where('cms_privileges.id','!=',1);
+			$privId = CRUDBooster::myPrivilegeId();
+			if($privId == 3){
+				$userId = CRUDBooster::myId();
+				$user = DB::table('cms_users')->where("id", $userId)->first();
+				$query->where("box.client_id", $user->client_id)->where('status_approve',2);
+				if($user->cabang_id != null && $user->cabang_id != ""){
+					$query->where("box.cabang_id", $user->cabang_id);
+				}
+			}
 	    }
 
 	    /*
@@ -294,13 +334,7 @@
 	    */
 	    public function hook_before_edit(&$postdata,$id) {        
 	        //Your code here
-			
-			if(!isset($postdata["cabang_id"])){
-				$postdata["cabang_id"] = null;
-			}
-			if(!isset($postdata["client_id"])){
-				$postdata["client_id"] = null;
-			}
+
 	    }
 
 	    /* 

@@ -4,7 +4,7 @@
 	use Request;
 	use DB;
 	use CRUDBooster;
-
+	use Illuminate\Support\Facades\Route;
 	class AdminClientController extends \crocodicstudio\crudbooster\controllers\CBController {
 
 	    public function cbInit() {
@@ -32,9 +32,16 @@
 			$this->col = [];
 			$this->col[] = ["label"=>"Nama","name"=>"nama"];
 			$this->col[] = ["label"=>"PKS","name"=>"attachment_pks", "callback"=>function($row){
-				$respon = "<span class='badge badge-warning'>Tidak Ada PKS</span>";
+				$respon = "<h4><span class='label label-warning'>Tidak Ada PKS</span></h4>";
 				if ($row->attachment_pks != null) {
 					$respon = "<a target='_blank' href='".url($row->attachment_pks)."' type='button' class='btn btn-primary btn-round btn-sm'>Download PKS</a>";
+				}
+				return $respon;
+			}];
+			$this->col[] = ["label"=>"Download Image","name"=>"is_download_box", "callback"=>function($row){
+				$respon = "<h4><span class='label label-warning'>Tidak Bisa</span></h4>";
+				if ($row->is_download_box == 1) {
+					$respon = "<h4><span class='label label-success'>Bisa</span></h4>";
 				}
 				return $respon;
 			}];
@@ -45,6 +52,7 @@
 			$this->form = [];
 			$this->form[] = ['label'=>'Nama','name'=>'nama','type'=>'text','validation'=>'required|string|min:3|max:70','width'=>'col-sm-10','placeholder'=>'You can only enter the letter only'];
 			$this->form[] = ['label'=>'PKS','name'=>'attachment_pks','type'=>'upload','validation'=>'file|max:10000','width'=>'col-sm-10'];
+			$this->form[] = ['label'=>'Download image arsip','name'=>'is_download_box','type'=>'select','width'=>'col-sm-10', 'dataenum'=>'Yes;No'];
 			$this->form[] = ['label'=>'Keterangan','name'=>'keterangan','type'=>'text','validation'=>'string|min:1|max:255','width'=>'col-sm-10'];
 			# END FORM DO NOT REMOVE THIS LINE
 
@@ -261,7 +269,11 @@
 	    */
 	    public function hook_before_add(&$postdata) {        
 	        //Your code here
-
+			if($postdata["is_download_box"] == "Yes"){
+				$postdata["is_download_box"] = 1;
+			}else{
+				$postdata["is_download_box"] = 0;
+			}
 	    }
 
 	    /* 
@@ -286,7 +298,11 @@
 	    */
 	    public function hook_before_edit(&$postdata,$id) {        
 	        //Your code here
-
+			if($postdata["is_download_box"] == "Yes"){
+				$postdata["is_download_box"] = 1;
+			}else{
+				$postdata["is_download_box"] = 0;
+			}
 	    }
 
 	    /* 
@@ -325,7 +341,32 @@
 
 	    }
 
+		public function getEdit($id)
+		{
+			$this->cbInit();
+			$row = DB::table("client")->where("id", $id)->first();
 
+			if (! CRUDBooster::isRead() && $this->global_privilege == false || $this->button_edit == false) {
+				CRUDBooster::insertLog(cbLang("log_try_edit", [
+					'name' => $this->title_field,
+					'module' => CRUDBooster::getCurrentModule()->name,
+				]));
+				CRUDBooster::redirect(CRUDBooster::adminPath(), cbLang('denied_access'));
+			}
+			$page_menu = Route::getCurrentRoute()->getActionName();
+			$page_title = cbLang("edit_data_page_title", ['module' => CRUDBooster::getCurrentModule()->name, 'name' => $this->title_field]);
+			$command = 'edit';
+			Session::put('current_row_id', $id);
+			if($row->is_download_box == 1){
+				$row->is_download_box = "Yes";
+			}else{
+				$row->is_download_box = "No";
+			}
+			// $return_url = Request::fullUrl();
+			$button_cancel = $button_save = true;
+			$forms = $this->form;
+			return view('crudbooster::default.form', compact('id', 'row', 'page_menu', 'page_title', 'command', 'button_cancel', 'button_save', 'forms'));
+		}
 
 	    //By the way, you can still create your own method in here... :) 
 
