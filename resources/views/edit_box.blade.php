@@ -127,12 +127,16 @@
                                 <td><label>Attachment</label></td>
                                 <td>
                                     <div class="row">
-                                        <input type="file" name="file_atc" accept=".pdf">
-                                        @if($row->file_atc != null && $row->file_atc != "")
-                                            <a class="btn btn-warning" target="_blank" href="{{ asset($row->file_atc) }}">Download Image</a>
-                                            <button type="button" id="deleteimage" class="btn btn-danger">Delete Image</button>
-                                        @endif
+                                        <input type="file" name="file_atc[]" accept=".pdf" multiple>
                                     </div>
+                                    @if($file_list != null && count($file_list) > 0)
+                                        @foreach ($file_list as $file)
+                                            <div class="row" style="margin-top: 10px">
+                                                <a class="btn btn-warning" target="_blank" href="{{ asset($file->path) }}">{{ $file->filename }}</a>
+                                                <button type="button" data-idfile="{{ $file->id }}" id="deleteimage" class="btn btn-danger">Delete Image</button>    
+                                            </div>
+                                        @endforeach
+                                    @endif
                                 </td>
                             </tr>
                             <tr>
@@ -193,7 +197,7 @@
         </div>
     </form>
     <form action="{{ CRUDBooster::mainpath("delete-atc") }}" style="display: none;" id="linkdel" >
-        <input type="hidden" name="id" value="{{ $row->id }}">
+        <input type="hidden" id="idfile" name="id" value="">
     </form>
 @endsection
 @push('head')
@@ -228,6 +232,8 @@
     $("#deleteimage").on("click", function(){
             // e.preventDefault();
             // $("#linkdel").trigger("click")
+            let idFile = $(this).data('idfile')
+            $("#idfile").val(idFile)
             swal({  
                 title:"Delete", 
                 text: "Are you sure want to delete?",
@@ -237,11 +243,7 @@
                 showLoaderOnConfirm: true
             },
             function(isconfirm){
-                console.log(isconfirm);
                 $("#linkdel").submit()
-                // if(isconfirm){
-                //     console.log(isconfirm);
-                // }
             });
         });
     $(".select2").select2();

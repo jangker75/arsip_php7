@@ -1,9 +1,11 @@
 <?php namespace App\Http\Controllers;
 
+	use crocodicstudio\crudbooster\helpers\CRUDBooster as CRUDBooster;
 	use Session;
 	use Request;
-	use DB;
-	use CRUDBooster;
+	// use DB;
+	// use CRUDBooster;
+	use Illuminate\Support\Facades\DB;
 
 	class AdminBoxArsipClientController extends \crocodicstudio\crudbooster\controllers\CBController {
 
@@ -36,7 +38,7 @@
 			$this->col[] = ["label"=>"Unit Kerja","name"=>"unit_kerja_id","join"=>"unit_kerja,nama"];
 			$this->col[] = ["label"=>"Nama Pengirim","name"=>"nama"];
 			$this->col[] = ["label"=>"Lokasi Penyimpanan Vault","name"=>"lokasi_vault_id","join"=>"lokasi_vault,nama"];
-			$this->col[] = ["label"=>"Nomor Rak","name"=>"nomor_rak_id","join"=>"m_rack,nomor_rak"];
+			// $this->col[] = ["label"=>"Nomor Rak","name"=>"nomor_rak_id","join"=>"m_rack,nomor_rak"];
 			$this->col[] = ["label"=>"Nomor Box","name"=>"kode_box"];
 			$this->col[] = ["label"=>"Kode Box","name"=>"kode_box_sistem"];
 			$this->col[] = ["label"=>"Tanggal Pemindahan","name"=>"tgl_pemindahan"];
@@ -54,7 +56,7 @@
 			$this->form[] = ['label'=>'Jumlah Bantex','name'=>'jumlah_dok','type'=>'number','validation'=>'|integer|min:0','width'=>'col-sm-10'];
 			$this->form[] = ['label'=>'Lokasi Penyimpanan Vault','name'=>'lokasi_vault_id','type'=>'select2','validation'=>'required|min:1|max:255','width'=>'col-sm-10','datatable'=>'lokasi_vault,nama'];
 			// $this->form[] = ['label'=>'Nomor Rak','name'=>'nomor_rak','type'=>'text','validation'=>'|min:1|max:255','width'=>'col-sm-10'];
-			$this->form[] = ['label'=>'Nomor Rak','name'=>'nomor_rak_id','type'=>'select2','validation'=>'required|min:0|max:255','width'=>'col-sm-10','datatable'=>'m_rack,nomor_rak'];
+			// $this->form[] = ['label'=>'Nomor Rak','name'=>'nomor_rak_id','type'=>'select2','validation'=>'required|min:0|max:255','width'=>'col-sm-10','datatable'=>'m_rack,nomor_rak'];
 			$this->form[] = ['label'=>'Nomor Box','name'=>'kode_box','type'=>'text','validation'=>'required|min:1|max:255','width'=>'col-sm-10'];
 			$this->form[] = ['label'=>'tgl_pemindahan','name'=>'tgl_pemindahan','type'=>'text','validation'=>'|min:1|max:255','width'=>'col-sm-10'];
 			$this->form[] = ['label'=>'Keterangan','name'=>'keterangan','type'=>'textarea','validation'=>'|string|min:5|max:5000','width'=>'col-sm-10'];
@@ -372,7 +374,34 @@
 	        //Your code here
 
 	    }
-
+		public function getDetail($id) {
+			
+			$data = [];
+			$data['page_title'] = 'Detail Data';
+			$data['row'] = DB::table('box')
+			->select('client.nama as nama_client',
+			'cabang.nama as nama_cabang',
+			'unit_kerja.nama as nama_unit_kerja',
+			// 'jenis_dokumen.nama as nama_jenis_dok',
+			'lokasi_vault.nama as nama_lokasi_vault',
+			'status.nama as nama_status',
+			'm_rack.nomor_rak as nomor_rak_tersimpan',
+			 'box.*')
+			->leftjoin('client', 'box.client_id', '=', 'client.id')
+			->leftjoin('cabang', 'box.cabang_id', '=', 'cabang.id')
+			->leftjoin('unit_kerja', 'box.unit_kerja_id', '=', 'unit_kerja.id')
+			->leftjoin("m_rack", "box.nomor_rak_id", "=", "m_rack.id")
+			->leftjoin('lokasi_vault', 'box.lokasi_vault_id', '=', 'lokasi_vault.id')
+			->leftjoin('status', 'box.status_id', '=', 'status.id')
+			
+			->where('box.id',$id)
+			->first();
+			$listAtc = DB::table('box_files')->where("box_id", $id)->get();
+			$data["file_atc"] = $listAtc;
+			//Please use cbView method instead view method from laravel
+			return view('detail_box',$data);
+			
+		}
 
 
 	    //By the way, you can still create your own method in here... :) 

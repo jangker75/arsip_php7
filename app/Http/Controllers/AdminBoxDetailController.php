@@ -26,7 +26,7 @@
 			$this->button_show = true;
 			$this->button_filter = true;
 			$this->button_import = false;
-			$this->button_export = false;
+			$this->button_export = true;
 			$this->table = "box_detail";
 			# END CONFIGURATION DO NOT REMOVE THIS LINE
 
@@ -45,61 +45,61 @@
 			// $this->col[] = ['label'=>'test', "name" => "box.kode_box", "callback"=>function($row){
 			// 	Debugbar::info($row);
 			// }];
-			$this->col[] = [
-				"label" => "Barcode", "name" => "box.kode_box","callback" => function ($row) {
-					$client = DB::table('client')->where('id', $row->client_id)->orderBy('id','asc')->first();
+			// $this->col[] = [
+			// 	"label" => "Barcode", "name" => "box.kode_box","callback" => function ($row) {
+			// 		$client = DB::table('client')->where('id', $row->client_id)->orderBy('id','asc')->first();
 					
-					return (
-					"<a data-toggle='modal' data-target='#Modal' href='https://chart.googleapis.com/chart?chs=300x300&cht=qr&chl=$row->kode_box'>
+			// 		return (
+			// 		"<a data-toggle='modal' data-target='#Modal' href='https://chart.googleapis.com/chart?chs=300x300&cht=qr&chl=$row->kode_box'>
 					
-					<img src='https://chart.googleapis.com/chart?chs=300x300&cht=qr&chl=".$row->kode_box."' 
-					onclick='#' alt='Barcode' width='50px' height='50px'></a>
+			// 		<img src='https://chart.googleapis.com/chart?chs=300x300&cht=qr&chl=".$row->kode_box."' 
+			// 		onclick='#' alt='Barcode' width='50px' height='50px'></a>
 					
-					<button type='button' class='btn' data-toggle='modal' data-target='#Modal".$row->id."' >Preview</button>
+			// 		<button type='button' class='btn' data-toggle='modal' data-target='#Modal".$row->id."' >Preview</button>
 
-			<div class='modal fade' id='Modal".$row->id."' data-id='".$row->id."'>
-			<div class='modal-dialog' role='document'>
+			// <div class='modal fade' id='Modal".$row->id."' data-id='".$row->id."'>
+			// <div class='modal-dialog' role='document'>
 
-				<div class='modal-content'>
+			// 	<div class='modal-content'>
 
-				<div class='modal-header'>
-					<h5 class='modal-title' id='exampleModalLabel'>Download Qrcode</h5>
-					<button type='button' class='close' data-dismiss='modal' aria-label='Close'>
-					<span aria-hidden='true'>&times;</span>
-				  </button>
-					</div>
+			// 	<div class='modal-header'>
+			// 		<h5 class='modal-title' id='exampleModalLabel'>Download Qrcode</h5>
+			// 		<button type='button' class='close' data-dismiss='modal' aria-label='Close'>
+			// 		<span aria-hidden='true'>&times;</span>
+			// 	  </button>
+			// 		</div>
 					
 			
-					<div class='modal-body' id='html-content-holder".$row->id."' data-id='".$row->id."' style='background-color: #FFFFFF;  
-					color: #000000; width: 500px; padding-top: 10px;'>
+			// 		<div class='modal-body' id='html-content-holder".$row->id."' data-id='".$row->id."' style='background-color: #FFFFFF;  
+			// 		color: #000000; width: 500px; padding-top: 10px;'>
 
-					<div class='row'>
-						<div class='col-lg-5'>
-						<img src='https://chart.googleapis.com/chart?chs=500x500&cht=qr&chl=.$row->kode_box.' 
-								id='noregNow' data=".$row->kode_box."
-								onclick='#' alt='Barcode' style='width:250px;height:250px;'>
-								</div>
-						<div class='col-lg-7' style='padding-top: 40px; padding-left: 40px'>
-								<h4 style='font-size:20px'>".$client->nama."<br><br>
-								Kode Box :<br>
-								".$row->kode_box_sistem."<br><br>
-								Nomor Box :<br>
-								".$row->kode_box."
-								</h4>
-								</div>
-					</div>
-					</div>
-					<div class='modal-footer'>
-					<button type='button' class='btn' data-dismiss='modal'>Close</button>
+			// 		<div class='row'>
+			// 			<div class='col-lg-5'>
+			// 			<img src='https://chart.googleapis.com/chart?chs=500x500&cht=qr&chl=.$row->kode_box.' 
+			// 					id='noregNow' data=".$row->kode_box."
+			// 					onclick='#' alt='Barcode' style='width:250px;height:250px;'>
+			// 					</div>
+			// 			<div class='col-lg-7' style='padding-top: 40px; padding-left: 40px'>
+			// 					<h4 style='font-size:20px'>".$client->nama."<br><br>
+			// 					Kode Box :<br>
+			// 					".$row->kode_box_sistem."<br><br>
+			// 					Nomor Box :<br>
+			// 					".$row->kode_box."
+			// 					</h4>
+			// 					</div>
+			// 		</div>
+			// 		</div>
+			// 		<div class='modal-footer'>
+			// 		<button type='button' class='btn' data-dismiss='modal'>Close</button>
 					
 					
-					</div>
-				</div>
+			// 		</div>
+			// 	</div>
 				
-			</div>	
-						");},"image"=>1
+			// </div>	
+			// 			");},"image"=>1
 
-			];
+			// ];
 			// $this->col[] = ["label"=>"Keterangan","name"=>"keterangan"];
 			# END COLUMNS DO NOT REMOVE THIS LINE
 

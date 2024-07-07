@@ -1,12 +1,14 @@
 <?php namespace App\Http\Controllers;
 
-use App\Http\Middleware\ApiMiddleware;
-use App\Services\DynamicImageService;
-use Session;
-		use Request;
-		use DB;
+		use App\Http\Middleware\ApiMiddleware;
+		use Illuminate\Support\Facades\DB;
+		use App\Services\DynamicImageService;
+		use Session;
+		// use Request;
+		// use DB;
 		use CRUDBooster;
-use Illuminate\Support\Facades\Auth;
+		use Illuminate\Support\Facades\Auth;
+		use Illuminate\Support\Facades\Request;
 
 		class ApiListBoxController extends \crocodicstudio\crudbooster\controllers\ApiController {
 
@@ -59,10 +61,21 @@ use Illuminate\Support\Facades\Auth;
 					$query->where('box.unit_kerja_id', Request::get('user')->unit_kerja_id);
 				}
 				if ($search != null || $search != '') {
-					$boxDtlSearch = DB::table('box_detail')->select('box_id')->where('nama', 'LIKE', "%$search%")
-								->skip($offset)->limit($limit)->pluck("box_id")->toArray();
-					
-					// dd($boxDtlSearch);
+					$boxDtlSearch = DB::table('box_detail')
+								->select('box_id as id')
+								->leftjoin('box', 'box.id','=','box_detail.box_id');
+								if($clientId != null && $clientId != 0 ){
+									$boxDtlSearch->where('box.client_id', $clientId);
+								}
+								if($cabangId != null && $cabangId != 0 ){
+									$boxDtlSearch->where('box.cabang_id', $cabangId);
+								}
+								if($client != null && $client->is_filter_unitkerja ==1){
+									$boxDtlSearch->where('box.unit_kerja_id', Request::get('user')->unit_kerja_id);
+								}
+					$boxDtlSearch = (clone $boxDtlSearch)->where('box_detail.nama', 'LIKE', "%$search%")
+								->skip($offset)->limit($limit)
+								->pluck("id")->toArray();
 					$box = (clone $query)
 						->where(function($q)use($search, $boxDtlSearch){
 							$q->where('box.kode_box', 'LIKE',"%$search%")
@@ -72,14 +85,12 @@ use Illuminate\Support\Facades\Auth;
 								$q->orWhereIn("box.id", $boxDtlSearch);
 							}
 						})
-						->orderBy('id', 'desc')
+						->orderBy('box.id', 'desc')
 						->skip($offset)->limit($limit)
 						->get();
-						// $query = str_replace(array('?'), array('\'%s\''), $box->toSql());
-						// $query = vsprintf($query, $box->getBindings());
-						// var_dump($query);
-						// exit;
-
+						// ->toSql();
+					// $query = str_replace(array('?'), array('\'%s\''), $box->toSql());
+					// $query = vsprintf($query, $box->getBindings());
 				} else {
 					$box = (clone $query)
 						->orderBy('id', 'desc')

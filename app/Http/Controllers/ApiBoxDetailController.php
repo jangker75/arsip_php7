@@ -70,7 +70,16 @@ use Session;
 					$data['foto_1'] = $foto1;
 					$data['foto_2'] = $foto2;
 					$data['foto_3'] = $foto3;
-
+					$listAtc = DB::table('box_files')->where("box_id", $row->id)->get();
+					$listFile = [];
+					foreach ($listAtc as $key => $value) {
+						$linkA = asset($value->path);
+						$a = [];
+						$a['filename'] = $value->filename;
+						$a['link'] = $linkA;
+						$listFile[] = $a;
+					}
+					$data["listAttachment"] = $listFile;
 					$box_detail = DB::table('box_detail')->select('box_detail.nama')
 						->where('box_id', $row->id)
 						->get();

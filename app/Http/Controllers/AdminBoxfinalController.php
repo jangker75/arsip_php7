@@ -1,15 +1,18 @@
 <?php namespace App\Http\Controllers;
 
+	use crocodicstudio\crudbooster\helpers\CRUDBooster;
+	use Illuminate\Support\Facades\DB;
 	use Session;
 	use Request;
-	use DB;
-	use CRUDBooster;
+	// use DB;
+	// use CRUDBooster;
 	use Illuminate\Http\Request as HttpRequest;
 	use Illuminate\Support\Facades\DB as FacadesDB;
 	use PDF;
 	use SimpleSoftwareIO\QrCode\Facades\QrCode;
 	use ZipArchive;
 	use SnappyImage;
+	use Storage;
 
 use function PHPUnit\Framework\isEmpty;
 
@@ -461,13 +464,40 @@ use function PHPUnit\Framework\isEmpty;
 	        //Your code here
 			DB::table('box_detail')->where('box_id',$id)->delete();
 		}
-		
+		public function getDetail($id) {
+			
+			$data = [];
+			$data['page_title'] = 'Detail Data';
+			$data['row'] = DB::table('box')
+			->select('client.nama as nama_client',
+			'cabang.nama as nama_cabang',
+			'unit_kerja.nama as nama_unit_kerja',
+			// 'jenis_dokumen.nama as nama_jenis_dok',
+			'lokasi_vault.nama as nama_lokasi_vault',
+			'status.nama as nama_status',
+			'm_rack.nomor_rak as nomor_rak_tersimpan',
+			 'box.*')
+			->leftjoin('client', 'box.client_id', '=', 'client.id')
+			->leftjoin('cabang', 'box.cabang_id', '=', 'cabang.id')
+			->leftjoin('unit_kerja', 'box.unit_kerja_id', '=', 'unit_kerja.id')
+			->leftjoin("m_rack", "box.nomor_rak_id", "=", "m_rack.id")
+			->leftjoin('lokasi_vault', 'box.lokasi_vault_id', '=', 'lokasi_vault.id')
+			->leftjoin('status', 'box.status_id', '=', 'status.id')
+			
+			->where('box.id',$id)
+			->first();
+			$listAtc = DB::table('box_files')->where("box_id", $id)->get();
+			$data["file_atc"] = $listAtc;
+			//Please use cbView method instead view method from laravel
+			return view('detail_box',$data);
+			
+		}
 		public function getEdit($id) {
 			//Create an Auth
 			if(!CRUDBooster::isUpdate() && $this->global_privilege==FALSE || $this->button_edit==FALSE) {    
-			  CRUDBooster::redirect(CRUDBooster::adminPath(),trans("crudbooster.denied_access"));
-			}
-			
+				CRUDBooster::redirect(CRUDBooster::adminPath(),trans("crudbooster.denied_access"));
+			  }
+			  
 			$data = [];
 			$data['page_title'] = 'Edit Data';
 			$data['row'] = DB::table('box')
@@ -481,10 +511,8 @@ use function PHPUnit\Framework\isEmpty;
 			->leftjoin('client', 'box.client_id', '=', 'client.id')
 			->leftjoin('cabang', 'box.cabang_id', '=', 'cabang.id')
 			->leftjoin('unit_kerja', 'box.unit_kerja_id', '=', 'unit_kerja.id')
-			// ->leftjoin('jenis_dokumen', 'box.jenis_dok_id', '=', 'jenis_dokumen.id')
 			->leftjoin('lokasi_vault', 'box.lokasi_vault_id', '=', 'lokasi_vault.id')
 			->leftjoin('status', 'box.status_id', '=', 'status.id')
-			
 			->where('box.id',$id)
 			->first();
 			// dd($data['row']->toSql());
@@ -496,6 +524,7 @@ use function PHPUnit\Framework\isEmpty;
 			->where('cabang_id', $data['row']->cabang_id)->get(['id', 'nama']);
 			$data['lokasi_vault_list'] =  DB::table('lokasi_vault')->get();
 			$data['status_list'] =  DB::table('status')->get();
+			$data["file_list"] = DB::table("box_files")->where("box_id", $id)->get();
 			//Please use cbView method instead view method from laravel
 			return view('edit_box',$data);
 			
@@ -516,11 +545,24 @@ use function PHPUnit\Framework\isEmpty;
 				  "nama" => request('nama'),
 			  ]);
 			if(request()->hasFile("file_atc")){
-				$atc = CRUDBooster::uploadFile("file_atc", true);
-				DB::table('box')->where('id', $id)
-					->update([
-						"file_atc" => $atc
-					]);
+				$atc = request()->file("file_atc");
+				// $atc = CRUDBooster::uploadFile("file_atc", true);
+				foreach ($atc as $key => $value) {
+					$file_path = 'uploads/box_file/'.date('Y-m');
+					$ext = $value->getClientOriginalExtension();
+					$filename = md5(str_random(3)).'.'.$ext;
+					if(Storage::putFileAs($file_path, $value, $filename)){
+						DB::table('box_files')->insert([
+							"box_id" => $id,
+							"filename" => $value->getClientOriginalName(),
+							"path" => $file_path . "/" . $filename
+						]);
+					}
+				}
+				// DB::table('box')->where('id', $id)
+				// 	->update([
+				// 		"file_atc" => $atc
+				// 	]);
 			}
 
 			// for ($i=1; $i < 4; $i++) { 
@@ -597,7 +639,7 @@ use function PHPUnit\Framework\isEmpty;
 		public function getDeleteAtc()
 		{
 			$id = request("id");
-			DB::table('box')->where("id", $id)->update(["file_atc" => ""]);
+			DB::table('box_files')->where("id", $id)->delete();
 			CRUDBooster::redirect($_SERVER['HTTP_REFERER'],"Delete data berhasil !","success");
 		}
 	    //By the way, you can still create your own method in here... :) 
